@@ -1,0 +1,162 @@
+JWT Authentication System with .NET and React
+
+Technologies Used:
+•	Backend: .NET Core Web API, ASP.NET Core Identity, Entity Framework Core, Microsoft SQL Server
+•	Frontend: React.js, Axios
+•	Tools: Postman, Swagger, Visual Studio, VS Code
+Project Overview
+This project implements a secure authentication system using JSON Web Tokens (JWT). It enables user registration, login, and secure API access with role-based authorization.
+________________________________________
+Backend Development in .NET
+1. Project Setup
+•	Created a new .NET Core Web API project.
+•	Installed the following NuGet packages:
+•	dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore
+•	dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+•	dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+•	dotnet add package Microsoft.IdentityModel.Tokens
+dotnet add package Swashbuckle.AspNetCore
+2. Database Setup (Entity Framework Core & SQL Server)
+•	Created AppDbContext.cs to manage the database.
+•	Configured the database in Program.cs.
+•	Applied migrations and updated the database:
+•	dotnet ef migrations add InitialCreate
+dotnet ef database update
+3. Implementing Authentication & JWT in AuthController.cs
+•	Created AuthController.cs to handle user registration and login.
+•	Used ASP.NET Core Identity to manage users.
+•	Implemented JWT token generation for authentication.
+•	Routes implemented:
+o	POST /api/auth/register → Registers a new user.
+o	POST /api/auth/login → Authenticates a user and returns a JWT token.
+Registration API (POST /api/auth/register)
+•	Accepts a RegisterModel (username, email, password).
+•	Creates a new user using UserManager<IdentityUser>.
+•	Stores user credentials securely.
+Login API (POST /api/auth/login)
+•	Accepts a LoginModel (username, password).
+•	Validates user credentials.
+•	Generates a JWT token and returns it.
+•	Token is valid for 30 minutes.
+JWT Token Generation
+•	Token is created using:
+o	Issuer & Audience (from appsettings.json).
+o	Signing key (HMAC SHA256).
+o	Claims (User details).
+Example JWT Configuration in appsettings.json:
+"Jwt": {
+  "Issuer": "yourdomain.com",
+  "Audience": "yourdomain.com",
+  "Key": "YourSuperSecretKey123!"
+}
+________________________________________
+4. Securing API Endpoints
+•	Implemented Role-Based Authorization.
+•	Used [Authorize] attributes to protect routes.
+Example of a Protected Route:
+[Authorize]
+[HttpGet("secure-endpoint")]
+public IActionResult GetSecureData()
+{
+    return Ok(new { message = "This is a secure endpoint!" });
+}
+•	Users must send a valid JWT token in the Authorization header:
+Authorization: Bearer <your-token>
+5. CORS Configuration
+•	Enabled CORS to allow the React frontend to communicate with the API:
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", builder =>
+        builder.WithOrigins("http://localhost:3000")
+               .AllowAnyMethod()
+               .AllowAnyHeader()
+    );
+});
+app.UseCors("AllowReactApp");
+6. Testing API with Postman & Swagger
+•	Swagger UI was set up for API testing (http://localhost:5217/swagger).
+•	Postman was used to test register and login endpoints.
+•	Successful login returned a JWT token, used to access secure endpoints.
+________________________________________
+Frontend Development in React
+1. Setting up React App
+•	Created a new React project:
+npx create-react-app jwt-auth-frontend
+•	Installed dependencies:
+npm install axios react-router-dom jwt-decode
+2. Configuring API Requests
+•	Created axiosInstance.js:
+•	import axios from 'axios';
+•	const axiosInstance = axios.create({
+•	  baseURL: 'http://localhost:5217/api',
+•	  headers: { 'Content-Type': 'application/json' },
+•	});
+export default axiosInstance;
+3. Implementing Login & Register Components
+Register (Register.js)
+•	Sends a POST request to /api/auth/register.
+•	Stores the user credentials in the database.
+const handleRegister = async (e) => {
+  e.preventDefault();
+  const userData = { username, email, password };
+  try {
+    await axios.post("http://localhost:5217/api/auth/register", userData);
+    alert("User registered successfully!");
+  } catch (error) {
+    console.error("Registration failed:", error);
+  }
+};
+Login (Login.js)
+•	Sends a POST request to /api/auth/login.
+•	Stores the JWT token in localStorage.
+const handleLogin = async (e) => {
+  e.preventDefault();
+  const userData = { username, password };
+  try {
+    const response = await axios.post("http://localhost:5217/api/auth/login", userData);
+    localStorage.setItem("token", response.data.token);
+    alert("Login successful!");
+  } catch (error) {
+    console.error("Login failed:", error);
+  }
+};
+4. Fetching Protected Data
+•	Created SecureData.js to fetch secure data.
+const fetchSecureData = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await axios.get("http://localhost:5217/api/secure-endpoint", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log(response.data);
+  } catch (error) {
+    console.error("Error fetching secure data:", error);
+  }
+};
+________________________________________
+Current Status & Next Steps
+Backend Completed
+ Frontend Completed
+Next Steps
+•	Implement Logout functionality (clear JWT token).
+•	Improve UI using Material UI or Tailwind CSS.
+•	Deploy to Azure / AWS.
+Conclusion
+This project successfully implements JWT-based authentication using .NET API and React frontend, following industry-standard security practices.
+
+
+Features:
+ User Registration & Login (ASP.NET Core Identity)
+JWT Authentication & Authorization
+ Role-Based Access Control (RBAC)
+Secure API Endpoints
+Frontend Integration with React & Axios
+CORS Configuration for Cross-Origin Requests
+API Documentation with Swagger
+Database Management using Entity Framework Core & Microsoft SQL Server
+Tech Stack:
+•	Backend: .NET Core Web API, ASP.NET Core Identity, Entity Framework Core, Microsoft SQL Server
+•	Frontend: React.js, Axios, React Router
+•	Authentication: JWT (JSON Web Token)
+•	Tools: Postman, Swagger, VS Code, GitHub
+
